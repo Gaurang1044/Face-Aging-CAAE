@@ -1,3 +1,5 @@
+
+
 # This code is an alternative implementation of the paper by
 # Zhifei Zhang, Yang Song, and Hairong Qi. "Age Progression/Regression by Conditional Adversarial Autoencoder."
 # IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2017.
@@ -15,6 +17,7 @@ import tensorflow as tf
 import numpy as np
 from scipy.io import savemat
 from ops import *
+
 
 
 class FaceAging(object):
@@ -52,28 +55,28 @@ class FaceAging(object):
         self.dataset_name = dataset_name
 
         # ************************************* input to graph ********************************************************
-        self.input_image = tf.placeholder(
+        self.input_image = tf.compat.v1.placeholder(
             tf.float32,
             [self.size_batch, self.size_image, self.size_image, self.num_input_channels],
             name='input_images'
         )
-        self.age = tf.placeholder(
+        self.age = tf.compat.v1.placeholder(
             tf.float32,
             [self.size_batch, self.num_categories],
             name='age_labels'
         )
-        self.gender = tf.placeholder(
+        self.gender = tf.compat.v1.placeholder(
             tf.float32,
             [self.size_batch, 2],
             name='gender_labels'
         )
-        self.z_prior = tf.placeholder(
+        self.z_prior = tf.compat.v1.placeholder(
             tf.float32,
             [self.size_batch, self.num_z_channels],
             name='z_prior'
         )
         # ************************************* build the graph *******************************************************
-        print '\n\tBuilding graph ...'
+        print ('\n\tBuilding graph ...')
 
         # encoder: input image --> z
         self.z = self.encoder(
@@ -153,7 +156,7 @@ class FaceAging(object):
             (tf.nn.l2_loss(self.G[:, :, 1:, :] - self.G[:, :, :self.size_image - 1, :]) / tv_x_size)) / self.size_batch
 
         # *********************************** trainable variables ****************************************************
-        trainable_variables = tf.trainable_variables()
+        trainable_variables = tf.compat.v1.trainable_variables()
         # variables of encoder
         self.E_variables = [var for var in trainable_variables if 'E_' in var.name]
         # variables of generator
@@ -164,21 +167,21 @@ class FaceAging(object):
         self.D_img_variables = [var for var in trainable_variables if 'D_img_' in var.name]
 
         # ************************************* collect the summary ***************************************
-        self.z_summary = tf.summary.histogram('z', self.z)
-        self.z_prior_summary = tf.summary.histogram('z_prior', self.z_prior)
-        self.EG_loss_summary = tf.summary.scalar('EG_loss', self.EG_loss)
-        self.D_z_loss_z_summary = tf.summary.scalar('D_z_loss_z', self.D_z_loss_z)
-        self.D_z_loss_prior_summary = tf.summary.scalar('D_z_loss_prior', self.D_z_loss_prior)
-        self.E_z_loss_summary = tf.summary.scalar('E_z_loss', self.E_z_loss)
-        self.D_z_logits_summary = tf.summary.histogram('D_z_logits', self.D_z_logits)
-        self.D_z_prior_logits_summary = tf.summary.histogram('D_z_prior_logits', self.D_z_prior_logits)
-        self.D_img_loss_input_summary = tf.summary.scalar('D_img_loss_input', self.D_img_loss_input)
-        self.D_img_loss_G_summary = tf.summary.scalar('D_img_loss_G', self.D_img_loss_G)
-        self.G_img_loss_summary = tf.summary.scalar('G_img_loss', self.G_img_loss)
-        self.D_G_logits_summary = tf.summary.histogram('D_G_logits', self.D_G_logits)
-        self.D_input_logits_summary = tf.summary.histogram('D_input_logits', self.D_input_logits)
+        self.z_summary = tf.compat.v1.summary.histogram('z', self.z)
+        self.z_prior_summary = tf.compat.v1.summary.histogram('z_prior', self.z_prior)
+        self.EG_loss_summary = tf.compat.v1.summary.scalar('EG_loss', self.EG_loss)
+        self.D_z_loss_z_summary = tf.compat.v1.summary.scalar('D_z_loss_z', self.D_z_loss_z)
+        self.D_z_loss_prior_summary = tf.compat.v1.summary.scalar('D_z_loss_prior', self.D_z_loss_prior)
+        self.E_z_loss_summary = tf.compat.v1.summary.scalar('E_z_loss', self.E_z_loss)
+        self.D_z_logits_summary = tf.compat.v1.summary.histogram('D_z_logits', self.D_z_logits)
+        self.D_z_prior_logits_summary = tf.compat.v1.summary.histogram('D_z_prior_logits', self.D_z_prior_logits)
+        self.D_img_loss_input_summary = tf.compat.v1.summary.scalar('D_img_loss_input', self.D_img_loss_input)
+        self.D_img_loss_G_summary = tf.compat.v1.summary.scalar('D_img_loss_G', self.D_img_loss_G)
+        self.G_img_loss_summary = tf.compat.v1.summary.scalar('G_img_loss', self.G_img_loss)
+        self.D_G_logits_summary = tf.compat.v1.summary.histogram('D_G_logits', self.D_G_logits)
+        self.D_input_logits_summary = tf.compat.v1.summary.histogram('D_input_logits', self.D_input_logits)
         # for saving the graph and variables
-        self.saver = tf.train.Saver(max_to_keep=2)
+        self.saver = tf.compat.v1.train.Saver(max_to_keep=2)
 
     def train(self,
               num_epochs=200,  # number of epochs
@@ -206,7 +209,7 @@ class FaceAging(object):
 
         # set learning rate decay
         self.EG_global_step = tf.Variable(0, trainable=False, name='global_step')
-        EG_learning_rate = tf.train.exponential_decay(
+        EG_learning_rate = tf.compat.v1.train.exponential_decay(
             learning_rate=learning_rate,
             global_step=self.EG_global_step,
             decay_steps=size_data / self.size_batch * 2,
@@ -215,8 +218,8 @@ class FaceAging(object):
         )
 
         # optimizer for encoder + generator
-        with tf.variable_scope('opt', reuse=tf.AUTO_REUSE):
-            self.EG_optimizer = tf.train.AdamOptimizer(
+        with tf.compat.v1.variable_scope('opt', reuse=tf.compat.v1.AUTO_REUSE):
+            self.EG_optimizer = tf.compat.v1.train.AdamOptimizer(
                 learning_rate=EG_learning_rate,
                 beta1=beta1
             ).minimize(
@@ -226,7 +229,7 @@ class FaceAging(object):
             )
 
             # optimizer for discriminator on z
-            self.D_z_optimizer = tf.train.AdamOptimizer(
+            self.D_z_optimizer = tf.compat.v1.train.AdamOptimizer(
                 learning_rate=EG_learning_rate,
                 beta1=beta1
             ).minimize(
@@ -235,7 +238,7 @@ class FaceAging(object):
             )
 
             # optimizer for discriminator on image
-            self.D_img_optimizer = tf.train.AdamOptimizer(
+            self.D_img_optimizer = tf.compat.v1.train.AdamOptimizer(
                 learning_rate=EG_learning_rate,
                 beta1=beta1
             ).minimize(
@@ -244,9 +247,9 @@ class FaceAging(object):
             )
 
         # *********************************** tensorboard *************************************************************
-        # for visualization (TensorBoard): $ tensorboard --logdir path/to/log-directory
-        self.EG_learning_rate_summary = tf.summary.scalar('EG_learning_rate', EG_learning_rate)
-        self.summary = tf.summary.merge([
+        for visualization (TensorBoard): $ tensorboard --logdir path/to/log-directory
+        self.EG_learning_rate_summary = tf.compat.v1.summary.scalar('EG_learning_rate', EG_learning_rate)
+        self.summary = tf.compat.v1.summary.merge([
             self.z_summary, self.z_prior_summary,
             self.D_z_loss_z_summary, self.D_z_loss_prior_summary,
             self.D_z_logits_summary, self.D_z_prior_logits_summary,
@@ -255,7 +258,7 @@ class FaceAging(object):
             self.G_img_loss_summary, self.EG_learning_rate_summary,
             self.D_G_logits_summary, self.D_input_logits_summary
         ])
-        self.writer = tf.summary.FileWriter(os.path.join(self.save_dir, 'summary'), self.session.graph)
+        self.writer = tf.compat.v1.summary.FileWriter(os.path.join(self.save_dir, 'summary'), self.session.graph)
 
         # ************* get some random samples as testing data to visualize the learning process *********************
         sample_files = file_names[0:self.size_batch]
@@ -306,7 +309,7 @@ class FaceAging(object):
 
         # ******************************************* training *******************************************************
         # initialize the graph
-        tf.global_variables_initializer().run()
+        tf.compat.v1.global_variables_initializer().run()
 
         # load check point
         if use_trained_model:
@@ -539,7 +542,7 @@ class FaceAging(object):
 
     def discriminator_z(self, z, is_training=True, reuse_variables=False, num_hidden_layer_channels=(64, 32, 16), enable_bn=True):
         if reuse_variables:
-            tf.get_variable_scope().reuse_variables()
+            tf.compat.v1.get_variable_scope().reuse_variables()
         current = z
         # fully connection layer
         for i in range(len(num_hidden_layer_channels)):
@@ -551,11 +554,11 @@ class FaceAging(object):
                 )
             if enable_bn:
                 name = 'D_z_bn' + str(i)
-                current = tf.contrib.layers.batch_norm(
+                current = tf.compat.v1.layers.batch_normalization(
                     current,
                     scale=False,
-                    is_training=is_training,
-                    scope=name,
+                    training=is_training,
+                    name=name,
                     reuse=reuse_variables
                 )
             current = tf.nn.relu(current)
@@ -570,7 +573,7 @@ class FaceAging(object):
 
     def discriminator_img(self, image, y, gender, is_training=True, reuse_variables=False, num_hidden_layer_channels=(16, 32, 64, 128), enable_bn=True):
         if reuse_variables:
-            tf.get_variable_scope().reuse_variables()
+            tf.compat.v1.get_variable_scope().reuse_variables()
         num_layers = len(num_hidden_layer_channels)
         current = image
         # conv layers with stride 2
@@ -584,11 +587,11 @@ class FaceAging(object):
                 )
             if enable_bn:
                 name = 'D_img_bn' + str(i)
-                current = tf.contrib.layers.batch_norm(
+                current = tf.compat.v1.layers.batch_normalization(
                     current,
                     scale=False,
-                    is_training=is_training,
-                    scope=name,
+                    training=is_training,
+                    name=name,
                     reuse=reuse_variables
                 )
             current = tf.nn.relu(current)
@@ -708,7 +711,7 @@ class FaceAging(object):
         num_samples = int(np.sqrt(self.size_batch))
         file_names = glob(testing_samples_dir)
         if len(file_names) < num_samples:
-            print 'The number of testing images is must larger than %d' % num_samples
+            print ('The number of testing images is must larger than %d' % num_samples)
             exit(0)
         sample_files = file_names[0:num_samples]
         sample = [load_image(
@@ -736,6 +739,6 @@ class FaceAging(object):
         self.test(images, gender_male, 'test_as_male.png')
         self.test(images, gender_female, 'test_as_female.png')
 
-        print '\n\tDone! Results are saved as %s\n' % os.path.join(self.save_dir, 'test', 'test_as_xxx.png')
+        print ('\n\tDone! Results are saved as %s\n' % os.path.join(self.save_dir, 'test', 'test_as_xxx.png'))
 
 

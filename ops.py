@@ -5,16 +5,16 @@ from scipy.misc import imread, imresize, imsave
 
 
 def conv2d(input_map, num_output_channels, size_kernel=5, stride=2, name='conv2d'):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         # stddev = np.sqrt(2.0 / (np.sqrt(input_map.get_shape()[-1].value * num_output_channels) * size_kernel ** 2))
         stddev = .02
-        kernel = tf.get_variable(
+        kernel = tf.compat.v1.get_variable(
             name='w',
             shape=[size_kernel, size_kernel, input_map.get_shape()[-1], num_output_channels],
             dtype=tf.float32,
-            initializer=tf.truncated_normal_initializer(stddev=stddev)
+            initializer=tf.compat.v1.truncated_normal_initializer(stddev=stddev)
         )
-        biases = tf.get_variable(
+        biases = tf.compat.v1.get_variable(
             name='b',
             shape=[num_output_channels],
             dtype=tf.float32,
@@ -25,16 +25,16 @@ def conv2d(input_map, num_output_channels, size_kernel=5, stride=2, name='conv2d
 
 
 def fc(input_vector, num_output_length, name='fc'):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         # stddev = np.sqrt(1.0 / (np.sqrt(input_vector.get_shape()[-1].value * num_output_length)))
         stddev = .02
-        w = tf.get_variable(
+        w = tf.compat.v1.get_variable(
             name='w',
             shape=[input_vector.get_shape()[1], num_output_length],
             dtype=tf.float32,
             initializer=tf.random_normal_initializer(stddev=stddev)
         )
-        b = tf.get_variable(
+        b = tf.compat.v1.get_variable(
             name='b',
             shape=[num_output_length],
             dtype=tf.float32,
@@ -44,17 +44,17 @@ def fc(input_vector, num_output_length, name='fc'):
 
 
 def deconv2d(input_map, output_shape, size_kernel=5, stride=2, stddev=0.02, name='deconv2d'):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         # stddev = np.sqrt(1.0 / (np.sqrt(input_map.get_shape()[-1].value * output_shape[-1]) * size_kernel ** 2))
         stddev = .02
         # filter : [height, width, output_channels, in_channels]
-        kernel = tf.get_variable(
+        kernel = tf.compat.v1.get_variable(
             name='w',
             shape=[size_kernel, size_kernel, output_shape[-1], input_map.get_shape()[-1]],
             dtype=tf.float32,
             initializer=tf.random_normal_initializer(stddev=stddev)
         )
-        biases = tf.get_variable(
+        biases = tf.compat.v1.get_variable(
             name='b',
             shape=[output_shape[-1]],
             dtype=tf.float32,
