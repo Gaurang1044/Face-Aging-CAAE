@@ -247,7 +247,7 @@ class FaceAging(object):
             )
 
         # *********************************** tensorboard *************************************************************
-        for visualization (TensorBoard): $ tensorboard --logdir path/to/log-directory
+        # for visualization (TensorBoard): $ tensorboard --logdir path/to/log-directory
         self.EG_learning_rate_summary = tf.compat.v1.summary.scalar('EG_learning_rate', EG_learning_rate)
         self.summary = tf.compat.v1.summary.merge([
             self.z_summary, self.z_prior_summary,
